@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/babylonlabs-io/babylon/test/e2e/bcd_consumer_integration/cosmwasmclient/config"
+	"github.com/babylonlabs-io/cosmwasm-client/config"
 	rpcclient "github.com/cometbft/cometbft/rpc/client"
 	"github.com/cosmos/cosmos-sdk/client"
 )
