@@ -75,8 +75,9 @@ func (c *Client) ReliablySendMsg(ctx context.Context, msg sdk.Msg, expectedError
 // It utilizes a file lock as well as a keyring lock to ensure atomic access.
 // TODO: needs tests
 func (c *Client) ReliablySendMsgs(ctx context.Context, msgs []sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error, retries ...uint) (*pv.RelayerTxResponse, error) {
+	rty := rtyAttNum
 	if len(retries) > 0 {
-		rtyAttNum = retries[0]
+		rty = retries[0]
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -125,7 +126,7 @@ func (c *Client) ReliablySendMsgs(ctx context.Context, msgs []sdk.Msg, expectedE
 		}
 		return nil
 	}, retry.Context(ctx), rtyAtt, rtyDel, rtyErr, retry.OnRetry(func(n uint, err error) {
-		c.logger.Debug("retrying", zap.Uint("attemp", n+1), zap.Uint("max_attempts", rtyAttNum), zap.Error(err))
+		c.logger.Debug("retrying", zap.Uint("attemp", n+1), zap.Uint("max_attempts", rty), zap.Error(err))
 	})); err != nil {
 		return nil, err
 	}
