@@ -54,17 +54,30 @@ func (c *Client) SendMsgsToMempool(ctx context.Context, msgs []sdk.Msg) error {
 	return nil
 }
 
+// SendMsg sends a message to the chain.
+func (c *Client) SendMsg(ctx context.Context, msg sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error) (*pv.RelayerTxResponse, error) {
+	return c.SendMsgs(ctx, []sdk.Msg{msg}, expectedErrors, unrecoverableErrors)
+}
+
+// SendMsgs sends a list of messages to the chain.
+func (c *Client) SendMsgs(ctx context.Context, msgs []sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error) (*pv.RelayerTxResponse, error) {
+	return c.ReliablySendMsgs(ctx, msgs, expectedErrors, unrecoverableErrors, 1)
+}
+
 // ReliablySendMsg reliable sends a message to the chain.
 // It utilizes a file lock as well as a keyring lock to ensure atomic access.
 // TODO: needs tests
-func (c *Client) ReliablySendMsg(ctx context.Context, msg sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error) (*pv.RelayerTxResponse, error) {
-	return c.ReliablySendMsgs(ctx, []sdk.Msg{msg}, expectedErrors, unrecoverableErrors)
+func (c *Client) ReliablySendMsg(ctx context.Context, msg sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error, retries ...uint) (*pv.RelayerTxResponse, error) {
+	return c.ReliablySendMsgs(ctx, []sdk.Msg{msg}, expectedErrors, unrecoverableErrors, retries...)
 }
 
 // ReliablySendMsgs reliably sends a list of messages to the chain.
 // It utilizes a file lock as well as a keyring lock to ensure atomic access.
 // TODO: needs tests
-func (c *Client) ReliablySendMsgs(ctx context.Context, msgs []sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error) (*pv.RelayerTxResponse, error) {
+func (c *Client) ReliablySendMsgs(ctx context.Context, msgs []sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error, retries ...uint) (*pv.RelayerTxResponse, error) {
+	if len(retries) > 0 {
+		rtyAttNum = retries[0]
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
