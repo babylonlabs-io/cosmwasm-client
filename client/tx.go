@@ -76,8 +76,10 @@ func (c *Client) ReliablySendMsg(ctx context.Context, msg sdk.Msg, expectedError
 // TODO: needs tests
 func (c *Client) ReliablySendMsgs(ctx context.Context, msgs []sdk.Msg, expectedErrors []*errors.Error, unrecoverableErrors []*errors.Error, retries ...uint) (*pv.RelayerTxResponse, error) {
 	rty := rtyAttNum
+	rtyAttempts := rtyAtt
 	if len(retries) > 0 {
 		rty = retries[0]
+		rtyAttempts = retry.Attempts(rty)
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -125,7 +127,7 @@ func (c *Client) ReliablySendMsgs(ctx context.Context, msgs []sdk.Msg, expectedE
 			return sendMsgErr
 		}
 		return nil
-	}, retry.Context(ctx), rtyAtt, rtyDel, rtyErr, retry.OnRetry(func(n uint, err error) {
+	}, retry.Context(ctx), rtyAttempts, rtyDel, rtyErr, retry.OnRetry(func(n uint, err error) {
 		c.logger.Debug("retrying", zap.Uint("attemp", n+1), zap.Uint("max_attempts", rty), zap.Error(err))
 	})); err != nil {
 		return nil, err
