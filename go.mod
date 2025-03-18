@@ -1,8 +1,6 @@
 module github.com/babylonlabs-io/cosmwasm-client
 
-go 1.23.1
-
-toolchain go1.23.7
+go 1.23.4
 
 require (
 	github.com/CosmWasm/wasmd v0.54.0
